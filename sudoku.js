@@ -24,8 +24,9 @@ function cross(A, B) {
 }
 
 var digits = '123456789';
-var rows = 'ABCDEFGHI';
-var cols = digits;
+var letters = 'ABCDEFGHI';
+var rows = chars(letters);
+var cols = chars(digits);
 var squares = cross(rows, cols);
 var unitlist = [];
 var units = {};
@@ -38,7 +39,7 @@ each(cols, function(c) {
 });
 each(['ABC','DEF','GHI'], function(rs) {
 	each(['123','456','789'], function(cs) {
-		unitlist.push(cross(rs, cs));
+		unitlist.push(cross(chars(rs), chars(cs)));
 	});
 });
 
@@ -112,7 +113,7 @@ function assign(values, s, d) {
 	//Eliminate all the other values (except d) from values[s] and propagate.
 	//Return values, except return false if a contradiction is detected.
 	var otherValues = values[s].replace(d, '');
-	if (all(otherValues, function(d2) { return eliminate(values, s, d2); })) {
+	if (all(chars(otherValues), function(d2) { return eliminate(values, s, d2); })) {
 		return values;
 	} else {
 		return false;
@@ -199,7 +200,7 @@ function search(values) {
 	var candidates = filter(squares, function(s) { return values[s].length > 1; });
 	candidates.sort(function(s1,s2) { return values[s1].length - values[s2].length; });
 	var s = candidates[0];
-	return some(values[s], function(d) { return search(assign(copy(values), s, d)) });
+	return some(chars(values[s]), function(d) { return search(assign(copy(values), s, d)) });
 }
 
 // ################ Utilities ################
@@ -300,7 +301,7 @@ function randomPuzzle(N) {
 	var shuffledSquares = shuffled(squares);
     for (var i = 0; i < shuffledSquares.length; i++) {
 		var s = shuffledSquares[i];
-        if (!assign(values, s, values[s][randomInt(0, values[s].length)])){
+        if (!assign(values, s, values[s].charAt(randomInt(0, values[s].length)))){
             break;
 		}
         var ds = filter(map(squares, function(s) { return values[s]; }), function(sd) { return sd.length == 1;});
@@ -524,6 +525,15 @@ function range(count) {
 	var result = [];
 	for (var i=0; i < count; i++) {
 		result.push(i);
+	}
+	return result;
+}
+
+function chars(string) {
+	//Old versions of jscripts don't support [] for strings, so we must turn them into arrays
+	var result = [];
+	for (var i = 0; i < string.length; i++) {
+		result.push(string.charAt(i));
 	}
 	return result;
 }
