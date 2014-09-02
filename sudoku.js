@@ -236,6 +236,10 @@ var sudoku = (function() {
 		return minValue;
 	}
 
+	function randomElement(list) {
+		return list[Math.floor(Math.random() * list.length)];
+	}
+
 
 	//Array.indexOf is not supported in old IEs
 	function contains(list, val) {
@@ -318,6 +322,101 @@ var sudoku = (function() {
 			}
 		}
 		return result;
+	}
+
+	function getHint(puzzle, values) {
+		if (!values) {
+			throw { message : 'Values must be sent in'};
+		}
+		var solved = solve(puzzle);
+
+		var errorSquares = [];
+		// 1. Check if there are any wrong fields, Hint about those first
+		for (var s in values) {
+			var guess = values[s];
+			if (guess && guess !== solved[s]) {
+				errorSquares.push(s);
+			}
+		}
+
+		if (errorSquares.length > 0) {
+			return {
+				type : 'error',
+				square : randomElement(errorSquares)
+			};
+		}
+
+		// 2. Find a field that has only one possibility and give a hint about that.
+		var elimValues = {};
+		for (var s in solved) {
+			elimValues[s] = DIGITS;
+		}
+
+		// One round of elimination only
+		for (var s in values) {
+			elimValues[s] = values[s];
+			var digit = values[s];
+			var units = UNITS[s];
+			for (var i = 0; i < PEERS[s].length; i++) {
+				var elimSquare = PEERS[s][i];
+				elimValues[elimSquare] = elimValues[elimSquare].replace(digit, '');
+			}
+		}
+
+		var hintSquares = [];
+		for (var s in elimValues) {
+			if (elimValues[s].length == 1 && !values[s]) {
+				hintSquares.push(s);
+			} 
+		}
+		if (hintSquares.length > 0) {
+			return {
+				type : 'squarehint',
+				square : randomElement(hintSquares)
+			}
+		}
+
+
+		var unitHints = [];
+		// 3. Is there a unit where one digit is only a possibility in one square?
+		for (var s in elimValues) {
+			var value = elimValues[s];
+			if (value.length == 1) {
+				continue;
+			}
+			var units = UNITS[s];
+			for (var i = 0; i < value.length; i++) {
+				var d = value.charAt(i);
+				for (var u =0; u < units.length; u++) {
+					var unit = units[u];
+					if (all(unit, function(s2) {
+						return s2 == s || elimValues[s2].indexOf(d) == -1;
+					})) {
+						var unitType = 'box';
+						if (unit[0].charAt(0) == unit[8].charAt(0)) {
+							unitType = 'row';
+						} else if (unit[0].charAt(1) == unit[8].charAt(1)) {
+							unitType = 'column';
+						}
+						unitHints.push({
+							type : 'unithint',
+							unitType : unitType,
+							unit : unit,
+							digit : d
+						});
+					}
+				}
+			}
+		}
+
+		if (unitHints.length > 0) {
+			return randomElement(unitHints);
+		}
+		
+		return {
+			type : 'dontknow',
+			squares : elimValues
+		};
 	}
 	
 	function getConflicts(values) {
@@ -575,22 +674,26 @@ var sudoku = (function() {
 				}
 			}
 		}
+
 		return values;
 	}
 
 	var module = {
-		generate : generate,
 		solve : solve,
 		getConflicts : getConflicts,
+		getHint : getHint,
+		isUnique : isUnique,
+		generate : generate,
 		serialize : serialize,
 		deserialize : deserialize,
 		debug : false,
-		getUnitList : function() { return UNITLIST.slice(); }
+		test : parseGrid,
+		unitList : UNITLIST
 	};
 
 	function debug(msg) {
 		if (module.debug) {
-			log(msg);
+			print(msg);
 		}
 	}
 

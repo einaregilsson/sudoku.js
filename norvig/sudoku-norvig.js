@@ -250,9 +250,9 @@ function solveAll(grids, name, showif) {
 	showif = showif || 0.0;
 	
 	function timeSolve(grid) {
-		var start = new Date().getMilliseconds();
+		var start = new Date().getTime();
         var values = solve(grid);
-        var t = new Date().getMilliseconds()-start;
+        var t = new Date().getTime()-start;
         // Display puzzles that take long enough
         if (showif && t > showif) {
             display(gridValues(grid));
@@ -270,7 +270,7 @@ function solveAll(grids, name, showif) {
 		results.push(result[1]);
 	});
     var N = grids.length;
-	var seconds = function(nr) { return (nr/1000).toFixed(2); };
+	var seconds = function(nr) { return (nr/1000.0).toFixed(2); };
     if (N > 1) {
         print('Solved ' + sum(results) + ' of ' + N + ' ' + name + ' puzzles '
 		+ '(avg ' + seconds(sum(times)/N) + ' secs'
