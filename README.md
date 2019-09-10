@@ -3,7 +3,7 @@ sudoku.js
 
 Sudoku Javascript library, based on Peter Norvig's solver
 
-This library was extracted from the Sudoku game at https://cardgames.io/sudoku/. 
+This library was extracted from the Sudoku game at https://cardgames.io/sudoku/ and https://sudoku.lol 
 It contains functions to generate and solve puzzles, get a list of conflicts in 
 ongoing puzzles, and serialize and deserialize puzzles.
 
